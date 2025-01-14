@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
+    <title>CyberSecurity Training Terminal</title>
+    
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    <div class="terminal-window">
+        <div class="terminal-header">
+            <span>Advanced CyberSecurity Training Terminal v3.0</span>
+            <span id="datetime"></span>
+        </div>
+        <div class="button-group">
+            <input type="text" class="search-bar" id="searchBar" placeholder="Search commands or tools...">
+            <button class="terminal-button" id="clearSearch">Clear</button>
+            <button class="terminal-button" id="toggleHistory">History</button>
+            <button class="terminal-button" id="toggleTraining">Training</button>
+        </div>
+        <div id="historyPanel" class="history-panel"></div>
+        <div id="trainingSection" class="training-section">
+            <div class="training-header">
+                <h2>Cybersecurity Training Resources</h2>
+                <button class="close-btn" id="closeTraining">×</button>
+            </div>
+            <div id="trainingContent"></div>
+        </div>
+        <div id="output" class="output-area">
+            Welcome to Advanced CyberSec Training Terminal v3.0
+            Type 'help' for commands or use search bar above.
+        </div>
+        <input type="text" class="command-input" id="commandInput" placeholder="> Enter command" autofocus>
+        <span class="cursor"></span>
+    </div>
+
+</body>
+</html>

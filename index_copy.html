@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Advanced CyberSec Training Terminal</title>
+    <style>
+        :root {
+            --terminal-green: #0F0;
+            --terminal-dark: #0a0a0a;
+            --terminal-gray: #333;
+            --terminal-highlight: #1a1a1a;
+            --category-color: #ff0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background: var(--terminal-dark);
+            color: var(--terminal-green);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .terminal-window {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--terminal-green);
+            min-height: 85vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--terminal-green);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            align-items: center;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            padding: 0.8rem;
+            background: var(--terminal-dark);
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar:focus {
+            border-color: #0F0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            outline: none;
+        }
+
+        .terminal-button {
+            background: transparent;
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .terminal-button:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+        }
+
+        .command-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--terminal-green);
+            font-size: 1rem;
+            outline: none;
+            padding: 0.8rem;
+            margin-top: 1rem;
+            border-top: 1px solid rgba(0, 255, 0, 0.2);
+        }
+
+        .output-area {
+            margin: 1rem 0;
+            white-space: pre-wrap;
+            max-height: calc(85vh - 200px);
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 0, 0.1);
+            font-size: 0.95rem;
+        }
+
+        .history-panel {
+            display: none;
+            position: absolute;
+            right: 1.5rem;
+            top: 5rem;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid var(--terminal-green);
+            padding: 1rem;
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+        }
+
+        .history-entry {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .history-entry:hover {
+            background: rgba(0, 255, 0, 0.1);
+            padding-left: 1rem;
+        }
+
+        .category-header {
+            color: var(--category-color);
+            border-bottom: 1px solid var(--category-color);
+            margin: 1rem 0;
+            padding-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .command-block {
+            margin: 0.8rem 0;
+            padding: 0.8rem;
+            border-left: 2px solid var(--terminal-green);
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--terminal-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--terminal-green);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0c0;
+        }
+
+        /* Blink animation for cursor */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background: var(--terminal-green);
+            margin-left: 5px;
+            animation: blink 1s infinite;
+        }
+
+        /* Terminal scanline effect */
+        .terminal-window::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                transparent 50%, 
+                rgba(0, 0, 0, 0.05) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
+        .terminal-button {
+            background: var(--terminal-dark);
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal-button:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .terminal-button:active {
+            transform: translateY(1px);
+        }
+
+        .training-section {
+            margin-top: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--terminal-green);
+            background: rgba(0, 255, 0, 0.05);
+        }
+
+        .training-link {
+            display: block;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            color: var(--terminal-green);
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .training-link:hover {
+            border-color: var(--terminal-green);
+            background: rgba(0, 255, 0, 0.1);
+            padding-left: 1.2rem;
+        }
+
+        .training-section {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            background: var(--terminal-dark);
+            border: 2px solid var(--terminal-green);
+            padding: 2rem;
+            z-index: 1001;
+            overflow-y: auto;
+        }
+
+        .training-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--terminal-green);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    <div class="terminal-window">
+        <div class="terminal-header">
+            <span>Advanced CyberSec Training Terminal v3.0</span>
+            <span id="datetime"></span>
+        </div>
+        <div class="button-group">
+            <input type="text" class="search-bar" id="searchBar" placeholder="Search commands or tools...">
+            <button class="terminal-button" id="clearSearch">Clear</button>
+            <button class="terminal-button" id="toggleHistory">History</button>
+            <button class="terminal-button" id="toggleTraining">Training</button>
+        </div>
+        <div id="historyPanel" class="history-panel"></div>
+        <div id="trainingSection" class="training-section">
+            <div class="training-header">
+                <h2>Cybersecurity Training Resources</h2>
+                <button class="close-btn" id="closeTraining">×</button>
+            </div>
+            <div id="trainingContent"></div>
+        </div>
+        <div id="output" class="output-area">
+            Welcome to Advanced CyberSec Training Terminal v3.0
+            Type 'help' for commands or use search bar above.
+        </div>
+        <input type="text" class="command-input" id="commandInput" placeholder="> Enter command" autofocus>
+        <span class="cursor"></span>
+    </div>
+
+    <script>
+        // Previous script content remains the same as in the last response
+        const commandInput = document.getElementById('commandInput');
+        const output = document.getElementById('output');
+        const searchBar = document.getElementById('searchBar');
+        const datetime = document.getElementById('datetime');
+        const clearSearch = document.getElementById('clearSearch');
+        const toggleHistory = document.getElementById('toggleHistory');
+        const historyPanel = document.getElementById('historyPanel');
+        let commandHistory = [];
+
+        setInterval(() => {
+            datetime.textContent = new Date().toLocaleString();
+        }, 1000);
+
+        const categories = {
+            'network': {
+                title: 'NETWORK SECURITY',
+                commands: {
+                    'nmap': 'Advanced port scanner and network mapper\nUsage: nmap [options] target\nKey options:\n-sS: Stealth scan\n-sV: Version detection\n-O: OS detection',
+                    'wireshark': 'Network protocol analyzer\nUsage: GUI or tshark -i interface\nFeatures: Packet capture, protocol analysis, traffic inspection',
+                    'tcpdump': 'Command-line packet analyzer\nUsage: tcpdump -i interface [options]',
+                    'netstat': 'Network connection analyzer\nUsage: netstat -tuln',
+                    'iptables': 'Firewall management\nUsage: iptables -A INPUT -p tcp --dport 80 -j ACCEPT'
+                }
+            },
+            'web': {
+                title: 'WEB SECURITY',
+                commands: {
+                    'burpsuite': 'Web application security testing\nFeatures: Proxy, Scanner, Intruder',
+                    'sqlmap': 'SQL injection testing\nUsage: sqlmap -u URL --dbs',
+                    'nikto': 'Web server scanner\nUsage: nikto -h target',
+                    'dirb': 'Web content scanner\nUsage: dirb http://target',
+                    'owasp-zap': 'Web app vulnerability scanner'
+                }
+            },
+            'crypto': {
+                title: 'CRYPTOGRAPHY',
+                commands: {
+                    'openssl': 'Cryptography toolkit\nUsage: openssl enc -aes-256-cbc -in file',
+                    'hashcat': 'Password cracker\nUsage: hashcat -m 0 hash.txt wordlist.txt',
+                    'gpg': 'File encryption\nUsage: gpg -c file',
+                    'john': 'Password cracker\nUsage: john hash.txt',
+                    'veracrypt': 'Disk encryption\nFeatures: Volume creation, mounting'
+                }
+            },
+            'forensics': {
+                title: 'FORENSICS',
+                commands: {
+                    'volatility': 'Memory analysis\nUsage: volatility -f mem.dump imageinfo',
+                    'autopsy': 'Digital forensics suite\nFeatures: File analysis, timeline',
+                    'dd': 'Disk imaging\nUsage: dd if=/dev/sda of=image.dd',
+                    'exiftool': 'Metadata analyzer\nUsage: exiftool image.jpg',
+                    'foremost': 'File carver\nUsage: foremost -t all -i disk.dd'
+                }
+            },
+            'malware': {
+                title: 'MALWARE ANALYSIS',
+                commands: {
+                    'ida': 'Interactive Disassembler\nFeatures: Code analysis, debugging',
+                    'ghidra': 'Reverse engineering suite\nFeatures: Decompiler, analyzer',
+                    'radare2': 'Reverse engineering framework\nUsage: r2 binary',
+                    'cuckoo': 'Automated malware analysis\nUsage: cuckoo submit file',
+                    'yara': 'Malware pattern matching\nUsage: yara rule.yar file'
+                }
+            }
+        };
+
+        function displayCategory(category) {
+            if (!categories[category]) {
+                return 'Category not found. Available categories: network, web, crypto, forensics, malware';
+            }
+            
+            let output = `\n${categories[category].title}\n${'='.repeat(categories[category].title.length)}\n\n`;
+            for (let cmd in categories[category].commands) {
+                output += `${cmd}:\n${categories[category].commands[cmd]}\n\n`;
+            }
+            return output;
+        }
+
+        function handleCommand(cmd) {
+            cmd = cmd.toLowerCase().trim();
+            
+            if (categories[cmd]) {
+                return displayCategory(cmd);
+            }
+
+            if (cmd === 'help') {
+                return `Available Categories:\n\n${Object.keys(categories).map(cat => 
+                    `${categories[cat].title}\nType '${cat}' to view commands\n`).join('\n')}`;
+            }
+
+            for (let category in categories) {
+                if (categories[category].commands[cmd]) {
+                    return `${cmd}:\n${categories[category].commands[cmd]}`;
+                }
+            }
+
+            return 'Command not found. Type "help" for available commands.';
+        }
+
+        function addToHistory(command) {
+            commandHistory.unshift(command);
+            if (commandHistory.length > 50) commandHistory.pop();
+            updateHistoryPanel();
+        }
+
+        function updateHistoryPanel() {
+            historyPanel.innerHTML = commandHistory
+                .map(cmd => `<div class="history-entry">${cmd}</div>`)
+                .join('');
+            
+            document.querySelectorAll('.history-entry').forEach(entry => {
+                entry.addEventListener('click', () => {
+                    commandInput.value = entry.textContent;
+                    commandInput.focus();
+                });
+            });
+        }
+
+        function searchCommands(query) {
+            query = query.toLowerCase();
+            let results = '';
+            
+            for (let category in categories) {
+                let categoryResults = '';
+                let foundInCategory = false;
+                
+                for (let cmd in categories[category].commands) {
+                    if (cmd.toLowerCase().includes(query) || 
+                        categories[category].commands[cmd].toLowerCase().includes(query)) {
+                        categoryResults += `\n${cmd}:\n${categories[category].commands[cmd]}\n`;
+                        foundInCategory = true;
+                    }
+                }
+                
+                if (foundInCategory) {
+                    results += `\n[${categories[category].title}]${categoryResults}\n`;
+                }
+            }
+            
+            return results || 'No results found. Try a different search term.';
+        }
+
+        // Improved search function
+        function searchCommands(query) {
+            query = query.toLowerCase().trim();
+            if (!query) return 'Type a search term to begin...';
+            if (query === 'help') return handleCommand('help');
+            
+            let results = '';
+            let matchFound = false;
+            
+            for (let category in categories) {
+                let categoryResults = '';
+                
+                for (let cmd in categories[category].commands) {
+                    if (cmd.includes(query) || 
+                        categories[category].commands[cmd].toLowerCase().includes(query)) {
+                        categoryResults += `\n${cmd}:\n${categories[category].commands[cmd]}\n`;
+                        matchFound = true;
+                    }
+                }
+                
+                if (categoryResults) {
+                    results += `\n${categories[category].title}\n${'='.repeat(categories[category].title.length)}${categoryResults}\n`;
+                }
+            }
+            
+            return matchFound ? results : 'No matches found. Try "help" for available commands.';
+        }
+
+        // Training functionality
+        const trainingSection = document.getElementById('trainingSection');
+        const trainingContent = document.getElementById('trainingContent');
+        const toggleTraining = document.getElementById('toggleTraining');
+        const closeTraining = document.getElementById('closeTraining');
+        const overlay = document.getElementById('overlay');
+
+        async function fetchTrainingResources() {
+            try {
+                // Simulate API fetch
+                const courses = [
+                    { title: 'Network Security Fundamentals', difficulty: 'Beginner', duration: '4 weeks', link: '#' },
+                    { title: 'Ethical Hacking Masterclass', difficulty: 'Advanced', duration: '8 weeks', link: '#' },
+                    { title: 'Web Application Security', difficulty: 'Intermediate', duration: '6 weeks', link: '#' },
+                    { title: 'Incident Response Training', difficulty: 'Intermediate', duration: '5 weeks', link: '#' }
+                ];
+                
+                trainingContent.innerHTML = courses.map(course => `
+                    <div class="command-block">
+                        <h3>${course.title}</h3>
+                        <p>Difficulty: ${course.difficulty}</p>
+                        <p>Duration: ${course.duration}</p>
+                        <a href="${course.link}" class="training-link">Start Training</a>
+                    </div>
+                `).join('');
+            } catch (error) {
+                trainingContent.innerHTML = 'Error loading training resources. Please try again.';
+            }
+        }
+
+        // Event listeners
+        toggleTraining.addEventListener('click', () => {
+            trainingSection.style.display = 'block';
+            overlay.style.display = 'block';
+            fetchTrainingResources();
+        });
+
+        closeTraining.addEventListener('click', () => {
+            trainingSection.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        // Fix history panel behavior
+        document.addEventListener('click', (e) => {
+            if (!historyPanel.contains(e.target) && 
+                !toggleHistory.contains(e.target)) {
+                historyPanel.style.display = 'none';
+            }
+        });
+
+
+        clearSearch.addEventListener('click', function() {
+            searchBar.value = '';
+            output.innerHTML = 'Search cleared. Type help for commands.\n';
+        });
+
+        toggleHistory.addEventListener('click', function() {
+            historyPanel.style.display = historyPanel.style.display === 'none' ? 'block' : 'none';
+        });
+
+        commandInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const input = this.value.trim();
+                if (input) {
+                    addToHistory(input);
+                    output.innerHTML += `\n> ${input}\n`;
+                    output.innerHTML += handleCommand(input);
+                    this.value = '';
+                    output.scrollTop = output.scrollHeight;
+                }
+            }
+        });
+
+        let searchTimeout;
+        searchBar.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+            
+            searchTimeout = setTimeout(() => {
+                if (query.length >= 2) {
+                    output.innerHTML = searchCommands(query);
+                }
+            }, 300);
+        });
+
+          // Update search event listener
+          searchBar.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value;
+            
+            searchTimeout = setTimeout(() => {
+                output.innerHTML = searchCommands(query);
+            }, 300);
+        });
+
+        historyPanel.style.display = 'none';
+    </script>
+</body>
+</html>
